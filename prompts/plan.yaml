@@ -16,11 +16,12 @@ system_template: >
   pytest-asyncio with an in-memory SQLite backend.
 
 
-  Write a clear, structured plan that defines scope, concrete tasks, file-level
-  changes, dependencies between tasks, and acceptance criteria. Think about edge
-  cases, failure modes, and migration impacts. Consider whether changes affect the
-  REST API, MCP tools, database schema, Helm chart, or CI pipeline. Present the
-  plan for review before any implementation begins.
+  Write the plan to PLAN.md in the repository root (overwrite if it exists).
+  The plan must define scope, concrete tasks, file-level changes, dependencies
+  between tasks, and acceptance criteria. Think about edge cases, failure modes,
+  and migration impacts. Consider whether changes affect the REST API, MCP tools,
+  database schema, Helm chart, or CI pipeline. Present the plan for user review
+  and WAIT for explicit approval before any implementation begins.
 user_template: >
   Create a detailed implementation plan for: {{ input }}
 

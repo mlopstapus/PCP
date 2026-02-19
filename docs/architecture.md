@@ -79,8 +79,8 @@ A versioned template with:
 
 PCP is a **prompt source**, not an LLM proxy. It never calls an LLM.
 
-1. Developer invokes `pcp-plan "build a feature store"` in their AI tool
-2. AI tool calls the `pcp-plan` MCP tool on the PCP server
+1. Developer invokes `sh-plan "build a feature store"` in their AI tool
+2. AI tool calls the `sh-plan` MCP tool on the PCP server
 3. PCP looks up the `plan` prompt, validates input against `input_schema`
 4. PCP expands Jinja2 templates with input variables
 5. PCP returns the expanded `system_message` + `user_message` to the AI tool
@@ -88,18 +88,18 @@ PCP is a **prompt source**, not an LLM proxy. It never calls an LLM.
 
 ### MCP Integration
 
-PCP exposes an MCP server over Streamable HTTP transport. Every prompt in the registry is automatically exposed as an MCP tool with a `pcp-` prefix.
+PCP exposes an MCP server over Streamable HTTP transport. Every prompt in the registry is automatically exposed as an MCP tool with a `sh-` prefix.
 
 **Dynamically registered tools:**
 
 | MCP Tool | Description |
 |----------|-------------|
-| `pcp-{name}` | Any prompt in the registry becomes `pcp-{name}` |
-| `pcp-list` | List all available prompts |
-| `pcp-search` | Search prompts by tag or name |
+| `sh-{name}` | Any prompt in the registry becomes `sh-{name}` |
+| `sh-list` | List all available prompts |
+| `sh-search` | Search prompts by tag or name |
 
 **Key design decisions:**
-- **`pcp-` prefix** — explicit routing; no ambiguity with local skills
+- **`sh-` prefix** — explicit routing; no ambiguity with local skills
 - **Dynamic registration** — new prompt → new MCP tool automatically
 - **PCP returns prompts, not LLM responses**
 - **Bearer token auth** via MCP connection headers
@@ -151,7 +151,7 @@ pcp/
 │   │   └── prompts.py       # Prompt CRUD + expand endpoints
 │   ├── mcp/
 │   │   ├── server.py        # MCP server setup
-│   │   └── tools.py         # Dynamic pcp-* tool registration
+│   │   └── tools.py         # Dynamic sh-* tool registration
 │   └── services/
 │       └── prompt_service.py  # CRUD + Jinja2 expansion
 ├── alembic/                 # Database migrations

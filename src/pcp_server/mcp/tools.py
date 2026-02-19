@@ -1,8 +1,8 @@
 """
 Dynamic MCP tool registration for PCP prompts.
 
-Each prompt in the registry becomes a `pcp-{name}` MCP tool.
-Static utility tools: `pcp-list`, `pcp-search`.
+Each prompt in the registry becomes a `sh-{name}` MCP tool.
+Static utility tools: `sh-list`, `sh-search`.
 """
 
 import json
@@ -13,7 +13,7 @@ from src.pcp_server.schemas import ExpandRequest
 from src.pcp_server.services import prompt_service
 
 
-@mcp.tool(name="pcp-list")
+@mcp.tool(name="sh-list")
 async def pcp_list() -> str:
     """List all available prompts in the PCP registry."""
     async with async_session() as db:
@@ -22,11 +22,11 @@ async def pcp_list() -> str:
         return "No prompts registered yet."
     lines = ["Available prompts:"]
     for name in names:
-        lines.append(f"  - pcp-{name}")
+        lines.append(f"  - sh-{name}")
     return "\n".join(lines)
 
 
-@mcp.tool(name="pcp-search")
+@mcp.tool(name="sh-search")
 async def pcp_search(query: str) -> str:
     """Search prompts by name or tag.
 
@@ -46,7 +46,7 @@ async def pcp_search(query: str) -> str:
             desc = p.description or "No description"
             has_tags = p.latest_version and p.latest_version.tags
             tags = ", ".join(p.latest_version.tags) if has_tags else "none"
-            matches.append(f"  - pcp-{p.name}: {desc} [tags: {tags}]")
+            matches.append(f"  - sh-{p.name}: {desc} [tags: {tags}]")
 
     if not matches:
         return f"No prompts matching '{query}'."
@@ -63,8 +63,8 @@ async def register_prompt_tools() -> None:
 
 
 def _register_one(prompt_name: str, description: str | None) -> None:
-    """Register a single pcp-{name} tool."""
-    tool_name = f"pcp-{prompt_name}"
+    """Register a single sh-{name} tool."""
+    tool_name = f"sh-{prompt_name}"
     tool_description = description or f"Expand the '{prompt_name}' prompt with your input."
 
     async def _tool_fn(input: str) -> str:  # noqa: A002

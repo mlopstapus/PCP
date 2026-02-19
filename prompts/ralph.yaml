@@ -11,7 +11,7 @@ system_template: >
   PCP is a self-hosted prompt registry built with Python 3.12, FastAPI,
   SQLAlchemy 2.0 (async), PostgreSQL, and the mcp Python SDK. Prompts are
   stored as YAML files with fields: name, description, version, system_template,
-  user_template, input_schema, and tags. Each prompt becomes a pcp-{name} MCP
+  user_template, input_schema, and tags. Each prompt becomes a sh-{name} MCP
   tool that AI coding assistants (Windsurf, Claude, Copilot) invoke directly.
   The system_template and user_template are expanded with Jinja2 using the
   input variable before being sent to the IDE's LLM.

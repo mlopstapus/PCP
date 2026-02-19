@@ -2,7 +2,7 @@
 
 An open-source, self-hosted prompt registry distributed via [MCP (Model Context Protocol)](https://modelcontextprotocol.io/).
 
-Define prompts once, distribute them to every developer's AI tool (Claude, Windsurf, Copilot) as `pcp-*` MCP tools. PCP never calls an LLM — it serves expanded prompts, and the IDE's own LLM does the work.
+Define prompts once, distribute them to every developer's AI tool (Claude, Windsurf, Copilot) as `sh-*` MCP tools. PCP never calls an LLM — it serves expanded prompts, and the IDE's own LLM does the work.
 
 ## Quickstart (docker-compose)
 
@@ -32,14 +32,14 @@ uvicorn src.pcp_server.main:app --reload --port 8000
 ```bash
 # Add a PostgreSQL instance (e.g. Bitnami)
 helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install pcp-postgresql bitnami/postgresql \
+helm install sh-postgresql bitnami/postgresql \
   --set auth.username=pcp \
   --set auth.password=pcp \
   --set auth.database=pcp
 
 # Install PCP
 helm install pcp charts/pcp \
-  --set postgresql.host=pcp-postgresql \
+  --set postgresql.host=sh-postgresql \
   --set postgresql.password=pcp \
   --set authToken=my-secret-token
 
@@ -98,20 +98,29 @@ Add to your MCP configuration:
 
 Once connected, you get these tools automatically:
 
+**Entrypoints** — start here:
+
 | Tool | Description |
 |------|-------------|
-| `pcp-plan` | Generate a structured implementation plan |
-| `pcp-feature` | Implement a new feature |
-| `pcp-iterate` | Incrementally improve existing code based on feedback |
-| `pcp-fix` | Diagnose and fix a bug or error |
-| `pcp-refactor` | Restructure code without changing behavior |
-| `pcp-test` | Generate tests for code |
-| `pcp-review` | Perform a thorough code review |
-| `pcp-document` | Generate documentation |
-| `pcp-commit` | Commit changes to the repository |
-| `pcp-ralph` | Iteratively improve PCP prompts based on session takeaways |
-| `pcp-list` | List all available prompts |
-| `pcp-search` | Search prompts by name or tag |
+| `sh-new` | Start a new feature or task — plans, implements, tests, and iterates with user feedback |
+| `sh-finish` | Finalize work — run tests, document, commit, review, and improve prompts |
+
+**Building blocks** — used by the entrypoints, or individually for targeted work:
+
+| Tool | Description |
+|------|-------------|
+| `sh-plan` | Generate a structured implementation plan |
+| `sh-feature` | Implement a new feature |
+| `sh-iterate` | Incrementally improve existing code based on feedback |
+| `sh-fix` | Diagnose and fix a bug or error |
+| `sh-refactor` | Restructure code without changing behavior |
+| `sh-test` | Generate tests for code |
+| `sh-review` | Perform a thorough code review |
+| `sh-document` | Generate documentation |
+| `sh-commit` | Commit changes to the repository |
+| `sh-ralph` | Iteratively improve PCP prompts based on session takeaways |
+| `sh-list` | List all available prompts |
+| `sh-search` | Search prompts by name or tag |
 
 ## API Examples
 
@@ -149,10 +158,10 @@ curl http://localhost:8000/api/v1/prompts
 ## How It Works
 
 1. Admin creates prompts via REST API (or seed script from YAML files in `prompts/`)
-2. PCP dynamically registers each prompt as a `pcp-{name}` MCP tool
+2. PCP dynamically registers each prompt as a `sh-{name}` MCP tool
 3. Developers connect their AI tool to PCP's MCP endpoint
-4. Developer invokes `pcp-plan build a feature store`
-5. AI tool calls the `pcp-plan` MCP tool → PCP expands the Jinja2 template → returns `system_message` + `user_message`
+4. Developer invokes `sh-plan build a feature store`
+5. AI tool calls the `sh-plan` MCP tool → PCP expands the Jinja2 template → returns `system_message` + `user_message`
 6. The IDE's own LLM uses the returned prompt to generate the response
 
 ## Prompt Composition

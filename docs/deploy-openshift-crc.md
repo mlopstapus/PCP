@@ -98,7 +98,7 @@ oc get pods -w
 ```
 
 > **Note:** The OpenShift template creates a service named `postgresql` (not
-> `pcp-postgresql` like the Bitnami chart). This affects the Helm install in the
+> `sh-postgresql` like the Bitnami chart). This affects the Helm install in the
 > next step.
 
 ## Step 4: Install the PCP Helm Chart
@@ -140,7 +140,7 @@ oc expose svc/pcp
 oc get route pcp
 ```
 
-This creates a route like `http://pcp-pcp.apps-crc.testing`.
+This creates a route like `http://sh-pcp.apps-crc.testing`.
 
 Test it:
 ```bash
@@ -176,7 +176,7 @@ Update your IDE's MCP config (e.g. `~/.codeium/windsurf/mcp_config.json`):
 {
   "mcpServers": {
     "pcp": {
-      "serverUrl": "http://pcp-pcp.apps-crc.testing/mcp"
+      "serverUrl": "http://sh-pcp.apps-crc.testing/mcp"
     }
   }
 }
@@ -210,5 +210,5 @@ oc delete project pcp
 | **ImagePullBackOff for external images (Docker Hub)** | CRC's VM can't reach external registries due to TLS issues. Use OpenShift built-in templates or push images to the internal registry manually. |
 | **ImagePullBackOff for PCP image** | Verify image was pushed: `oc get imagestream -n pcp`. Ensure the Helm install uses the **internal** registry URL (`image-registry.openshift-image-registry.svc:5000`). |
 | **CrashLoopBackOff on PCP pod** | Check logs: `oc logs deploy/pcp`. Usually a DB connection issue — verify PostgreSQL is running and `postgresql.host` matches the service name. |
-| **Migration job stuck** | Check: `oc logs job/pcp-migrate`. DB might not be ready yet. Delete the job and re-run: `oc delete job pcp-migrate && helm upgrade pcp ./charts/pcp ...` |
+| **Migration job stuck** | Check: `oc logs job/sh-migrate`. DB might not be ready yet. Delete the job and re-run: `oc delete job sh-migrate && helm upgrade pcp ./charts/pcp ...` |
 | **Route not resolving** | CRC routes use `*.apps-crc.testing`. Verify DNS: `ping apps-crc.testing`. |

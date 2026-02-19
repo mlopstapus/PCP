@@ -4,80 +4,51 @@ description: Full development lifecycle workflow — from planning through commi
 
 # Development Lifecycle Workflow
 
-Use this workflow to move a piece of work from idea to committed code. Follow the steps in order; skip steps only when noted.
+Two entrypoints cover the full lifecycle. Use `sh-new` to start work and `sh-finish` to ship it.
 
-## 1. Plan (`/plan`)
+## `sh-new` — Start Work
 
-- Define scope, tasks, dependencies, and acceptance criteria.
-- Output: a plan file in `docs/` (e.g., `docs/plan-<feature>.md`).
-- **Skip if:** the task is small and well-understood (e.g., a one-file change).
-- **🚧 GATE: Present the plan to the user and WAIT for explicit approval before proceeding.**
-  - Ask the user to review the plan and confirm, request changes, or ask questions.
-  - Do NOT move to Step 2 until the user says the plan is approved.
-  - If the user requests changes, update the plan and re-present for approval.
+Handles planning and implementation in a feedback loop with the user.
 
-## 2. Build (`/feature`)
+### Phase 1: Planning
 
-- Implement the feature from the plan or user description.
-- Create a feature branch: `feature/<short-description>`.
-- Write tests alongside the implementation.
+- Write a structured plan to `PLAN.md` in the repository root.
+- Include review and testing perspectives via prompt composition.
+- **🚧 GATE: Present the plan and WAIT for explicit user approval.**
+  - Do NOT proceed until the user confirms.
+  - If the user requests changes, update PLAN.md and re-present.
 
-## 3. Harden (loop)
+### Phase 2: Implementation Cycle (loop)
 
-Repeat these as needed until the implementation is solid:
+1. **Implement** — Build the next piece of the plan. Create a feature branch if needed: `feature/<short-description>`. Follow router → service → DB layering.
+2. **Test** — Run `python -m pytest tests/ -v` after each change. Write tests alongside implementation.
+3. **Seek Feedback** — Present what changed and ask the user for feedback. WAIT for response.
+4. **Iterate/Fix/Refactor** — Based on feedback, choose the right action:
+   - New feedback → iterate
+   - Bug or broken behavior → fix (root cause, regression test)
+   - Structural problem → refactor (tests must exist first)
+5. **Repeat** steps 1-4 until the user is satisfied.
 
-### 3a. Iterate (`/iterate`)
+When done, tell the user to run `sh-finish`.
 
-- Improve the implementation based on feedback, test results, or new requirements.
-- One concern per cycle; always leave the code working.
+---
 
-### 3b. Fix (`/fix`)
+## `sh-finish` — Ship It
 
-- If a bug surfaces, diagnose the root cause and apply a minimal fix.
-- Add a regression test.
+Executes these steps in order, completing each fully before moving on:
 
-### 3c. Refactor (`/refactor`)
-
-- If iteration or fixing reveals structural problems, refactor.
-- Ensure tests exist first; behavior must not change.
-- **Escalate to `/plan`** if the refactor scope is large.
-
-## 4. Test (`/test`)
-
-- Run the full test suite to confirm all functionality works end-to-end.
-- Verify unit, integration, and any e2e tests pass.
-- Check code coverage — add tests for any uncovered paths before proceeding.
-- If tests fail, loop back to step 3b (`/fix`).
-
-## 5. Review (`/review`)
-
-- Perform a senior-engineer-level code review.
-- Check syntax, style, design patterns, performance, and security.
-- Address any findings by looping back to step 3.
-
-## 6. Document (`/document`)
-
-- Update or create documentation in `/docs`.
-  - New features → `docs/features/`
-  - Bug fixes → `docs/bugs/`
-- Add code comments where logic is not self-explanatory.
-- Run the linter.
-
-## 7. Commit (`/commit`)
-
-- Pull latest, rebase off default branch, resolve conflicts.
-- Write a conventional commit message.
-- Create a merge request if none exists.
+1. **Test** — Run full test suite, check coverage, add tests for uncovered paths.
+2. **Document** — Update README, docs/, and code comments as needed.
+3. **Commit** — Verify feature branch (NOT main), run ruff + pytest, conventional commit, push, create PR.
+4. **Review** — Thorough code review; if issues found, fix and loop back to step 1.
+5. **Improve Prompts** — Ralph reviews the session and suggests prompt improvements.
 
 ---
 
 ## Quick Reference
 
-| Situation | Start at |
+| Situation | Use |
 |---|---|
-| New feature or epic | Step 1 (`/plan`) |
-| Small, clear task | Step 2 (`/feature`) |
-| Something is broken | Step 3b (`/fix`) |
-| "Make this better" feedback | Step 3a (`/iterate`) |
-| Tech debt / code smells | Step 3c (`/refactor`) |
-| Ready to ship | Step 4 (`/review`) |
+| New feature or epic | `sh-new` |
+| Ready to ship | `sh-finish` |
+| Small targeted task | Individual building blocks: `sh-fix`, `sh-iterate`, `sh-refactor`, etc. |

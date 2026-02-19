@@ -36,7 +36,7 @@ env:
   logLevel: info
 
 postgresql:
-  host: pcp-postgresql
+  host: sh-postgresql
   port: 5432
   database: pcp
   username: pcp

@@ -141,6 +141,24 @@ async def deprecate_prompt(db: AsyncSession, name: str) -> bool:
 MAX_INCLUDE_DEPTH = 3
 
 
+async def pin_version(
+    db: AsyncSession, name: str, version: str
+) -> PromptResponse | None:
+    result = await db.execute(
+        select(Prompt).where(Prompt.name == name).options(selectinload(Prompt.versions))
+    )
+    prompt = result.scalar_one_or_none()
+    if not prompt:
+        return None
+    target = next((v for v in prompt.versions if v.version == version), None)
+    if not target:
+        return None
+    prompt.active_version_id = target.id
+    await db.commit()
+    await db.refresh(prompt)
+    return _prompt_response(prompt)
+
+
 async def _fetch_prompt_version(
     db: AsyncSession, name: str, version: str | None = None
 ) -> PromptVersion | None:
@@ -151,6 +169,10 @@ async def _fetch_prompt_version(
         return None
     if version:
         return next((v for v in prompt.versions if v.version == version), None)
+    if prompt.active_version_id:
+        pinned = next((v for v in prompt.versions if v.id == prompt.active_version_id), None)
+        if pinned:
+            return pinned
     return prompt.versions[0]
 
 

@@ -540,6 +540,48 @@ async def test_include_prompt_in_system_template(client):
 
 
 @pytest.mark.asyncio
+async def test_pin_version(client):
+    await client.post(
+        "/api/v1/prompts",
+        json={
+            "name": "pin-test",
+            "version": {
+                "version": "1.0.0",
+                "user_template": "v1: {{ input }}",
+            },
+        },
+    )
+    await client.put(
+        "/api/v1/prompts/pin-test",
+        json={"version": "2.0.0", "user_template": "v2: {{ input }}"},
+    )
+    # Pin to v1
+    resp = await client.post("/api/v1/prompts/pin-test/rollback/1.0.0")
+    assert resp.status_code == 200
+
+    # Expand without version should use pinned v1
+    expand_resp = await client.post(
+        "/api/v1/expand/pin-test", json={"input": {"input": "hello"}}
+    )
+    assert expand_resp.status_code == 200
+    assert expand_resp.json()["prompt_version"] == "1.0.0"
+    assert "v1: hello" in expand_resp.json()["user_message"]
+
+
+@pytest.mark.asyncio
+async def test_pin_version_not_found(client):
+    await client.post(
+        "/api/v1/prompts",
+        json={
+            "name": "pin-404",
+            "version": {"version": "1.0.0", "user_template": "{{ input }}"},
+        },
+    )
+    resp = await client.post("/api/v1/prompts/pin-404/rollback/9.9.9")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
 async def test_health(client):
     resp = await client.get("/health")
     assert resp.status_code == 200
