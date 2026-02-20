@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, ChevronDown, ChevronRight } from "lucide-react";
 import { createPrompt, APIError } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/hooks/use-toast";
 
 export default function CreatePromptPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -35,6 +37,7 @@ export default function CreatePromptPage() {
   );
   const [submitting, setSubmitting] = useState(false);
   const [nameError, setNameError] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const validateName = (v: string) => {
     if (!/^[a-z0-9-]*$/.test(v)) {
@@ -55,7 +58,7 @@ export default function CreatePromptPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !userTemplate || nameError) return;
+    if (!name || nameError) return;
 
     let schema: Record<string, unknown> | undefined;
     try {
@@ -70,10 +73,11 @@ export default function CreatePromptPage() {
       await createPrompt({
         name,
         description: description || undefined,
+        user_id: user?.id,
         version: {
           version,
           system_template: systemTemplate || undefined,
-          user_template: userTemplate,
+          user_template: userTemplate || undefined,
           input_schema: schema,
           tags: tags.length > 0 ? tags : undefined,
         },
@@ -146,12 +150,12 @@ export default function CreatePromptPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Templates</CardTitle>
+            <CardTitle className="text-base">Template</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium mb-1.5 block">
-                System Template <span className="text-muted-foreground">(optional)</span>
+                System Template
               </label>
               <textarea
                 className="w-full min-h-[120px] rounded-md border border-input bg-[#0d0d0d] px-3 py-2 text-sm font-[family-name:var(--font-geist-mono)] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -159,70 +163,99 @@ export default function CreatePromptPage() {
                 value={systemTemplate}
                 onChange={(e) => setSystemTemplate(e.target.value)}
               />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">User Template</label>
-              <textarea
-                className="w-full min-h-[120px] rounded-md border border-input bg-[#0d0d0d] px-3 py-2 text-sm font-[family-name:var(--font-geist-mono)] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                placeholder="Implement the following: {{ input }}"
-                value={userTemplate}
-                onChange={(e) => setUserTemplate(e.target.value)}
-                required
-              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The main prompt content. Use {"{{ input }}"} to reference the user&apos;s input.
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Metadata</CardTitle>
+            <CardTitle className="text-base">Tags</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">Tags</label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add a tag..."
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addTag();
-                    }
-                  }}
-                />
-                <Button type="button" variant="outline" size="sm" onClick={addTag}>
-                  Add
-                </Button>
-              </div>
-              {tags.length > 0 && (
-                <div className="flex gap-1.5 flex-wrap mt-2">
-                  {tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="gap-1">
-                      {tag}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => setTags(tags.filter((t) => t !== tag))}
-                      />
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">Input Schema (JSON)</label>
-              <textarea
-                className="w-full min-h-[120px] rounded-md border border-input bg-[#0d0d0d] px-3 py-2 text-sm font-[family-name:var(--font-geist-mono)] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                value={inputSchema}
-                onChange={(e) => setInputSchema(e.target.value)}
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add a tag..."
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
               />
+              <Button type="button" variant="outline" size="sm" onClick={addTag}>
+                Add
+              </Button>
             </div>
+            {tags.length > 0 && (
+              <div className="flex gap-1.5 flex-wrap mt-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="gap-1">
+                    {tag}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setTags(tags.filter((t) => t !== tag))}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <button
+              type="button"
+              className="flex items-center gap-2 w-full text-left"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              {showAdvanced ? (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              )}
+              <CardTitle className="text-base">Advanced</CardTitle>
+              <span className="text-xs text-muted-foreground ml-auto">Optional</span>
+            </button>
+          </CardHeader>
+          {showAdvanced && (
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">
+                  User Template
+                </label>
+                <textarea
+                  className="w-full min-h-[80px] rounded-md border border-input bg-[#0d0d0d] px-3 py-2 text-sm font-[family-name:var(--font-geist-mono)] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  placeholder="Leave empty to pass user input directly"
+                  value={userTemplate}
+                  onChange={(e) => setUserTemplate(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  If empty, the user&apos;s raw input is used as the user message. Only needed for prompts that compose other prompts via include_prompt().
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Input Schema (JSON)</label>
+                <textarea
+                  className="w-full min-h-[80px] rounded-md border border-input bg-[#0d0d0d] px-3 py-2 text-sm font-[family-name:var(--font-geist-mono)] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  value={inputSchema}
+                  onChange={(e) => setInputSchema(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Defaults to a single &quot;input&quot; string field. Only change for multi-variable prompts.
+                </p>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
         <div className="flex gap-3">
-          <Button type="submit" disabled={submitting || !name || !userTemplate || !!nameError}>
+          <Button type="submit" disabled={submitting || !name || !!nameError}>
             {submitting ? "Creating..." : "Create Prompt"}
           </Button>
           <Button type="button" variant="outline" onClick={() => router.back()}>

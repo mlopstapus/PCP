@@ -129,8 +129,8 @@ A versioned template with:
 
 PCP is a **prompt source**, not an LLM proxy. It never calls an LLM.
 
-1. Developer invokes `pcp-plan "build a feature store"` in their AI tool
-2. AI tool calls the `pcp-plan` MCP tool on the PCP server
+1. Developer invokes `sh-plan "build a feature store"` in their AI tool
+2. AI tool calls the `sh-plan` MCP tool on the PCP server
 3. PCP looks up the `plan` prompt, resolves the user's effective policies and objectives
 4. PCP applies policy enforcement (prepend/append/inject) to the templates
 5. PCP expands Jinja2 templates with input variables + policy/objective context
@@ -139,19 +139,19 @@ PCP is a **prompt source**, not an LLM proxy. It never calls an LLM.
 
 ### MCP Integration
 
-PCP exposes an MCP server over Streamable HTTP transport. Every prompt in the registry is automatically exposed as an MCP tool with a `pcp-` prefix.
+PCP exposes an MCP server over Streamable HTTP transport. Every prompt in the registry is automatically exposed as an MCP tool with an `sh-` prefix.
 
 **Dynamically registered tools:**
 
 | MCP Tool | Description |
 |----------|-------------|
-| `pcp-{name}` | Any prompt in the registry becomes `pcp-{name}` |
-| `pcp-list` | List all available prompts |
-| `pcp-search` | Search prompts by tag or name |
-| `pcp-context` | Show effective policies and objectives for a user |
+| `sh-{name}` | Any prompt in the registry becomes `sh-{name}` |
+| `sh-list` | List all available prompts |
+| `sh-search` | Search prompts by tag or name |
+| `sh-context` | Show effective policies and objectives for a user |
 
 **Key design decisions:**
-- **`pcp-` prefix** — explicit routing; no ambiguity with local skills
+- **`sh-` prefix** — explicit routing; no ambiguity with local skills
 - **Dynamic registration** — new prompt → new MCP tool automatically
 - **Optional `project` parameter** — each tool accepts an optional project UUID to layer project context
 - **PCP returns prompts, not LLM responses**
@@ -302,7 +302,7 @@ pcp/
 │   │   └── metrics.py         # Usage analytics
 │   ├── mcp/
 │   │   ├── server.py          # MCP server setup
-│   │   └── tools.py           # Dynamic pcp-* tool registration + pcp-context
+│   │   └── tools.py           # Dynamic sh-* tool registration + sh-context
 │   └── services/
 │       ├── team_service.py    # Team CRUD + chain walking
 │       ├── user_service.py    # User CRUD
@@ -320,9 +320,7 @@ pcp/
 │       └── lib/api.ts         # Typed API client
 ├── alembic/                   # Database migrations
 ├── charts/pcp/                # Helm chart for Kubernetes
-├── prompts/                   # Example prompt library (YAML)
-├── tests/                     # pytest test suite (64 tests)
-├── scripts/seed.py            # Load example prompts into DB
+├── tests/                     # pytest test suite
 ├── Dockerfile
 ├── docker-compose.yaml
 └── pyproject.toml

@@ -8,6 +8,7 @@ dev-credentials.csv
 *.egg
 dist/
 build/
+scripts/
 
 # Virtual environments
 .venv

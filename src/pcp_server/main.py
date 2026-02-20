@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.pcp_server.config import settings
 from src.pcp_server.mcp.server import mcp
+from src.pcp_server.mcp.session import ApiKeyMiddleware
 from src.pcp_server.mcp.tools import register_prompt_tools
 from src.pcp_server.routers.auth import router as auth_router
 from src.pcp_server.routers.apikeys import router as apikeys_router
@@ -57,7 +58,7 @@ app.include_router(prompts_router)
 app.include_router(teams_router)
 app.include_router(users_router)
 app.include_router(workflows_router)
-app.mount("/mcp", mcp.streamable_http_app())
+app.mount("/mcp", ApiKeyMiddleware(mcp.streamable_http_app()))
 
 
 @app.get("/health")

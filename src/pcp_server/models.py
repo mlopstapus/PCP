@@ -289,7 +289,7 @@ class PromptVersion(Base):
     )
     version: Mapped[str] = mapped_column(String(50), nullable=False)
     system_template: Mapped[str | None] = mapped_column(Text)
-    user_template: Mapped[str] = mapped_column(Text, nullable=False)
+    user_template: Mapped[str | None] = mapped_column(Text, nullable=True)
     input_schema: Mapped[dict] = mapped_column(JSON, default=dict)
     tags: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

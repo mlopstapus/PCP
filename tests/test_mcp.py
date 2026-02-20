@@ -1,10 +1,12 @@
 """Tests for MCP tool registration and invocation."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from src.pcp_server.mcp.server import mcp
-from src.pcp_server.mcp.tools import _register_one, pcp_list, pcp_search
+from src.pcp_server.mcp.tools import register_prompt_tool, pcp_list, pcp_search
 from src.pcp_server.models import Prompt, PromptVersion
 
 
@@ -14,6 +16,13 @@ def _test_session_factory(db_session):
     )
 
 
+def _mock_ctx():
+    """Create a mock Context with a unique session identity."""
+    ctx = MagicMock()
+    ctx.session = MagicMock()
+    return ctx
+
+
 @pytest.mark.asyncio
 async def test_pcp_list_empty(db_session: AsyncSession, monkeypatch):
     """sh-list returns a message when no prompts exist."""
@@ -21,7 +30,7 @@ async def test_pcp_list_empty(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    result = await pcp_list()
+    result = await pcp_list(ctx=_mock_ctx())
     assert "No prompts" in result
 
 
@@ -43,8 +52,8 @@ async def test_pcp_list_with_prompts(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    result = await pcp_list()
-    assert "pcp-my-prompt" in result
+    result = await pcp_list(ctx=_mock_ctx())
+    assert "sh-my-prompt" in result
 
 
 @pytest.mark.asyncio
@@ -66,8 +75,8 @@ async def test_pcp_search_match(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    result = await pcp_search("search")
-    assert "pcp-search-target" in result
+    result = await pcp_search("search", ctx=_mock_ctx())
+    assert "sh-search-target" in result
 
 
 @pytest.mark.asyncio
@@ -77,7 +86,7 @@ async def test_pcp_search_no_match(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    result = await pcp_search("zzz-nonexistent")
+    result = await pcp_search("zzz-nonexistent", ctx=_mock_ctx())
     assert "No prompts matching" in result
 
 
@@ -100,8 +109,8 @@ async def test_pcp_search_by_tag(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    result = await pcp_search("unique-tag")
-    assert "pcp-tag-match" in result
+    result = await pcp_search("unique-tag", ctx=_mock_ctx())
+    assert "sh-tag-match" in result
 
 
 @pytest.mark.asyncio
@@ -122,17 +131,17 @@ async def test_pcp_search_by_description(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    result = await pcp_search("distinctive")
-    assert "pcp-desc-match" in result
+    result = await pcp_search("distinctive", ctx=_mock_ctx())
+    assert "sh-desc-match" in result
 
 
-def test_register_one_creates_tool():
-    """_register_one adds a tool to the MCP server."""
+def test_register_prompt_tool_creates_tool():
+    """register_prompt_tool adds a tool to the MCP server."""
     initial_count = len(mcp._tool_manager._tools)
-    _register_one("unit-test-prompt", "A dynamically registered tool")
+    register_prompt_tool("unit-test-prompt", "A dynamically registered tool")
     new_count = len(mcp._tool_manager._tools)
     assert new_count == initial_count + 1
-    assert "pcp-unit-test-prompt" in mcp._tool_manager._tools
+    assert "sh-unit-test-prompt" in mcp._tool_manager._tools
 
 
 @pytest.mark.asyncio
@@ -154,10 +163,10 @@ async def test_dynamic_tool_invocation(db_session: AsyncSession, monkeypatch):
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    _register_one("invoke-me", "Test invocation")
+    register_prompt_tool("invoke-me", "Test invocation")
 
-    tool_fn = mcp._tool_manager._tools["pcp-invoke-me"].fn
-    result = await tool_fn(input='{"input": "hello"}')
+    tool_fn = mcp._tool_manager._tools["sh-invoke-me"].fn
+    result = await tool_fn(input='{"input": "hello"}', ctx=_mock_ctx())
     assert "[System]" in result
     assert "System says: hello" in result
     assert "[User]" in result
@@ -182,8 +191,8 @@ async def test_dynamic_tool_plain_string_input(db_session: AsyncSession, monkeyp
 
     monkeypatch.setattr(tools_module, "async_session", _test_session_factory(db_session))
 
-    _register_one("plain-input", "Plain string test")
+    register_prompt_tool("plain-input", "Plain string test")
 
-    tool_fn = mcp._tool_manager._tools["pcp-plain-input"].fn
-    result = await tool_fn(input="just a string")
+    tool_fn = mcp._tool_manager._tools["sh-plain-input"].fn
+    result = await tool_fn(input="just a string", ctx=_mock_ctx())
     assert "Got: just a string" in result
