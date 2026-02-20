@@ -60,6 +60,24 @@ async def update_team(
     return result
 
 
+@router.post("/insert-between/{child_team_id}", response_model=TeamResponse, status_code=201)
+async def insert_team_between(
+    child_team_id: uuid.UUID,
+    data: TeamCreate,
+    admin: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a new team between a child and its current parent. The child is reparented under the new team."""
+    try:
+        return await team_service.insert_team_between(db, data, child_team_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        if "unique" in str(e).lower():
+            raise HTTPException(status_code=409, detail=f"Team slug '{data.slug}' already exists")
+        raise
+
+
 @router.delete("/{team_id}", status_code=204)
 async def delete_team(
     team_id: uuid.UUID,

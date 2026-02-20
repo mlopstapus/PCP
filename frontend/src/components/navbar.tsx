@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Plus, LogOut, Shield } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -62,12 +62,6 @@ export function Navbar() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button size="sm" asChild>
-              <Link href="/prompts/new">
-                <Plus className="h-4 w-4 mr-1" />
-                New Prompt
-              </Link>
-            </Button>
             {user && (
               <div className="flex items-center gap-2 pl-2 border-l border-border">
                 <div className="text-right hidden sm:block">

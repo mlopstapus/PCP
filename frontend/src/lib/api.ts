@@ -187,6 +187,16 @@ export async function createTeam(data: {
   });
 }
 
+export async function insertTeamBetween(
+  childTeamId: string,
+  data: { name: string; slug: string; description?: string }
+): Promise<Team_t> {
+  return fetchAPI<Team_t>(`/teams/insert-between/${childTeamId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function updateTeam(
   id: string,
   data: { name?: string; description?: string; owner_id?: string }
@@ -332,6 +342,13 @@ export async function getEffectivePolicies(
   return fetchAPI<EffectivePoliciesResponse>(`/policies/effective?${params}`);
 }
 
+export async function getTeamEffectivePolicies(
+  teamId: string
+): Promise<EffectivePoliciesResponse> {
+  const params = new URLSearchParams({ team_id: teamId });
+  return fetchAPI<EffectivePoliciesResponse>(`/policies/effective?${params}`);
+}
+
 // =====================================================================
 // Objective types & endpoints
 // =====================================================================
@@ -392,6 +409,13 @@ export async function getEffectiveObjectives(
 ): Promise<EffectiveObjectivesResponse> {
   const params = new URLSearchParams({ user_id: userId });
   if (projectId) params.set("project_id", projectId);
+  return fetchAPI<EffectiveObjectivesResponse>(`/objectives/effective?${params}`);
+}
+
+export async function getTeamEffectiveObjectives(
+  teamId: string
+): Promise<EffectiveObjectivesResponse> {
+  const params = new URLSearchParams({ team_id: teamId });
   return fetchAPI<EffectiveObjectivesResponse>(`/objectives/effective?${params}`);
 }
 

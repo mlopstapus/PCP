@@ -13,6 +13,7 @@ from src.pcp_server.schemas import (
     ObjectiveUpdate,
 )
 from src.pcp_server.services import objective_service
+from src.pcp_server.services.team_service import get_team_chain
 
 router = APIRouter(prefix="/api/v1/objectives", tags=["objectives"])
 
@@ -28,11 +29,51 @@ async def create_objective(
 
 @router.get("/effective", response_model=EffectiveObjectivesResponse)
 async def get_effective_objectives(
-    user_id: uuid.UUID,
+    user_id: uuid.UUID | None = Query(None),
+    team_id: uuid.UUID | None = Query(None),
     project_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    return await objective_service.resolve_effective(db, user_id, project_id)
+    if team_id:
+        return await resolve_team_effective_objectives(db, team_id)
+    if user_id:
+        return await objective_service.resolve_effective(db, user_id, project_id)
+    raise HTTPException(status_code=400, detail="Provide user_id or team_id")
+
+
+async def resolve_team_effective_objectives(
+    db: AsyncSession, team_id: uuid.UUID
+) -> EffectiveObjectivesResponse:
+    from src.pcp_server.models import Objective
+    from sqlalchemy import select
+    chain = await get_team_chain(db, team_id)
+    inherited: list[ObjectiveResponse] = []
+    local: list[ObjectiveResponse] = []
+
+    # Local: this team's own objectives (chain[0])
+    result = await db.execute(
+        select(Objective)
+        .where(Objective.team_id == chain[0].id, Objective.status == "active")
+        .order_by(Objective.created_at)
+    )
+    for o in result.scalars().all():
+        obj_resp = ObjectiveResponse.model_validate(o)
+        obj_resp.is_inherited = False
+        local.append(obj_resp)
+
+    # Inherited: only from the direct parent (chain[1]), no full rollup
+    if len(chain) > 1:
+        result = await db.execute(
+            select(Objective)
+            .where(Objective.team_id == chain[1].id, Objective.status == "active")
+            .order_by(Objective.created_at)
+        )
+        for o in result.scalars().all():
+            obj_resp = ObjectiveResponse.model_validate(o)
+            obj_resp.is_inherited = True
+            inherited.append(obj_resp)
+
+    return EffectiveObjectivesResponse(inherited=inherited, local=local)
 
 
 @router.get("/{objective_id}", response_model=ObjectiveResponse)

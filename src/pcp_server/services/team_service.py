@@ -89,6 +89,37 @@ async def delete_team(db: AsyncSession, team_id: uuid.UUID) -> bool:
     return True
 
 
+async def insert_team_between(
+    db: AsyncSession, data: TeamCreate, child_team_id: uuid.UUID
+) -> TeamResponse:
+    """Create a new team between parent and child.
+    
+    The new team gets the child's current parent_team_id.
+    The child is reparented under the new team.
+    """
+    # Verify child exists
+    result = await db.execute(select(Team).where(Team.id == child_team_id))
+    child = result.scalar_one_or_none()
+    if not child:
+        raise ValueError("Child team not found")
+
+    # New team takes the child's current parent
+    new_team = Team(
+        name=data.name,
+        slug=data.slug,
+        description=data.description,
+        parent_team_id=child.parent_team_id,
+    )
+    db.add(new_team)
+    await db.flush()  # get new_team.id
+
+    # Reparent child under new team
+    child.parent_team_id = new_team.id
+    await db.commit()
+    await db.refresh(new_team)
+    return TeamResponse.model_validate(new_team)
+
+
 async def get_team_chain(db: AsyncSession, team_id: uuid.UUID) -> list[Team]:
     """Walk the parent chain from team_id up to the root. Returns [current, parent, grandparent, ...]."""
     chain: list[Team] = []
