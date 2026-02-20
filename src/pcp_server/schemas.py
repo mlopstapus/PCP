@@ -224,11 +224,21 @@ class ProjectMemberResponse(BaseModel):
 # Prompt schemas (user-scoped)
 # ---------------------------------------------------------------------------
 
+_DEFAULT_INPUT_SCHEMA: dict = {
+    "type": "object",
+    "properties": {"input": {"type": "string", "description": "Free-text input"}},
+    "required": ["input"],
+}
+
+
 class PromptVersionCreate(BaseModel):
     version: str = Field(..., examples=["1.0.0"])
     system_template: str | None = None
-    user_template: str = Field(..., examples=["Generate a PRD for: {{ feature_description }}"])
-    input_schema: dict = Field(default_factory=dict)
+    user_template: str | None = Field(
+        default=None,
+        examples=["Generate a PRD for: {{ feature_description }}"],
+    )
+    input_schema: dict = Field(default_factory=lambda: dict(_DEFAULT_INPUT_SCHEMA))
     tags: list[str] = Field(default_factory=list)
 
 
@@ -244,7 +254,7 @@ class PromptVersionResponse(BaseModel):
     prompt_id: uuid.UUID
     version: str
     system_template: str | None
-    user_template: str
+    user_template: str | None
     input_schema: dict
     tags: list[str]
     created_at: datetime
@@ -275,8 +285,8 @@ class PromptListResponse(BaseModel):
 class NewVersionCreate(BaseModel):
     version: str = Field(..., examples=["1.1.0"])
     system_template: str | None = None
-    user_template: str
-    input_schema: dict = Field(default_factory=dict)
+    user_template: str | None = None
+    input_schema: dict = Field(default_factory=lambda: dict(_DEFAULT_INPUT_SCHEMA))
     tags: list[str] = Field(default_factory=list)
 
 

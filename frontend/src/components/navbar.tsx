@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { LogOut, Shield } from "lucide-react";
+import { LogOut, Settings, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,6 @@ const navItems = [
   { href: "/prompts", label: "Prompts" },
   { href: "/workflows", label: "Workflows" },
   { href: "/metrics", label: "Metrics" },
-  { href: "/settings", label: "Settings" },
 ];
 
 export function Navbar() {
@@ -77,6 +76,17 @@ export function Navbar() {
                     )}
                   </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  asChild
+                  title="Settings"
+                >
+                  <Link href="/settings">
+                    <Settings className="h-3.5 w-3.5" />
+                  </Link>
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"

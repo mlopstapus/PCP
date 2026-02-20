@@ -205,7 +205,8 @@ def _build_include_prompt(
         parts = []
         if pv.system_template:
             parts.append(_render_template(inner_env, pv.system_template, variables))
-        parts.append(_render_template(inner_env, pv.user_template, variables))
+        user_tpl = pv.user_template or "{{ input }}"
+        parts.append(_render_template(inner_env, user_tpl, variables))
         return "\n\n".join(parts)
 
     return include_prompt
@@ -275,7 +276,7 @@ async def expand_prompt(
             effective_user_id = prompt_obj.user_id
 
     system_tpl = pv.system_template
-    user_tpl = pv.user_template
+    user_tpl = pv.user_template or "{{ input }}"
     template_vars = dict(data.input)
 
     if effective_user_id:

@@ -149,15 +149,10 @@ curl http://$ROUTE/health
 # Expected: {"status":"ok"}
 ```
 
-## Step 7: Seed the Prompts
+## Step 7: Create Prompts
 
-The prompt YAML files in `prompts/` need to be loaded into the database:
+Create prompts via the admin dashboard or REST API:
 
-```bash
-oc exec deploy/pcp -- python scripts/seed.py
-```
-
-Verify they were loaded:
 ```bash
 curl http://$ROUTE/api/v1/prompts | python3 -m json.tool
 ```

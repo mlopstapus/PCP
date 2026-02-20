@@ -431,7 +431,7 @@ export interface PromptVersion {
   id: string;
   version: string;
   system_template: string | null;
-  user_template: string;
+  user_template: string | null;
   input_schema: Record<string, unknown> | null;
   tags: string[];
   created_at: string;
@@ -488,7 +488,7 @@ export async function createPrompt(data: {
   version: {
     version: string;
     system_template?: string;
-    user_template: string;
+    user_template?: string;
     input_schema?: Record<string, unknown>;
     tags?: string[];
   };
@@ -504,7 +504,7 @@ export async function createVersion(
   data: {
     version: string;
     system_template?: string;
-    user_template: string;
+    user_template?: string;
     input_schema?: Record<string, unknown>;
     tags?: string[];
   }

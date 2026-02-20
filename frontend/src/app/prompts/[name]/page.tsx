@@ -143,29 +143,16 @@ export default function PromptDetailPage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    User Template
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="text-sm bg-[#0d0d0d] rounded-md p-4 overflow-x-auto whitespace-pre-wrap font-[family-name:var(--font-geist-mono)]">
-                    {selectedVersion.user_template}
-                  </pre>
-                </CardContent>
-              </Card>
-
-              {selectedVersion.input_schema && (
+              {selectedVersion.user_template && (
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Input Schema
+                      User Template
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <pre className="text-sm bg-[#0d0d0d] rounded-md p-4 overflow-x-auto whitespace-pre-wrap font-[family-name:var(--font-geist-mono)]">
-                      {JSON.stringify(selectedVersion.input_schema, null, 2)}
+                      {selectedVersion.user_template}
                     </pre>
                   </CardContent>
                 </Card>
